@@ -30,6 +30,7 @@ class KwFra(Frame):
         self.pack(fill=X, pady=2)
         self.alcount=IntVar(self)
         self.cjcount=IntVar(self)
+        self.thconut=IntVar(self)
         self.getCount()
         self.createWidgets()
 
@@ -40,12 +41,14 @@ class KwFra(Frame):
         f0.grid(row=0, column=0, sticky='w') # sticky='w'指定了组件在单元格中靠左对齐
         f1=Frame(lframe)
         f1.grid(row=1, column=0, sticky='w')
+        f2=Frame(lframe)
+        f2.grid(row=2, column=0, sticky='w')
         Label(f0,text='一级类目:').pack(padx=3,side=LEFT)
         Label(f0,textvariable=self.alcount).pack(padx=3,side=LEFT)
         Label(f1,text='二级类目:').pack(padx=3,side=LEFT)
-        Label(f1,textvariable=self.cjcount,fg='red').pack(padx=3,side=LEFT)
-
-
+        Label(f1,textvariable=self.cjcount).pack(padx=3,side=LEFT)
+        Label(f2,text='三级类目:').pack(padx=3,side=LEFT)
+        Label(f2,textvariable=self.thconut,fg='red').pack(padx=3,side=LEFT)
 
         Button(self,text='刷新数据',command=self.rload_data).pack(side=LEFT,padx=20)
 
@@ -62,8 +65,10 @@ class KwFra(Frame):
     def getCount(self):
         res0=exe_sql('select count(cid) from class where grade=1')
         res1=exe_sql('select count(cid) from class where grade=2')
+        res2=exe_sql('select count(cid) from class where grade=3')
         self.alcount.set(res0[0][0])
         self.cjcount.set(res1[0][0])
+        self.thconut.set(res2[0][0])
     
     def cj_kw(self):
         try:
@@ -73,7 +78,7 @@ class KwFra(Frame):
 
             else:
                 self.getCount()
-                messagebox.showinfo('提示',f'采集完成,数据库目前有{self.cjcount.get()}个二级类目')
+                messagebox.showinfo('提示',f'采集完成,数据库目前有{self.cjcount.get()}个三级类目')
 
         except Exception as e:
 
@@ -159,8 +164,8 @@ class WzFra(Frame):
 
     
     def getCount(self):
-        res0=exe_sql('select count(cid) from class where grade=2')
-        res1=exe_sql('select count(cid) from class where grade=2 and cstate=0')
+        res0=exe_sql('select count(cid) from class where grade=3')
+        res1=exe_sql('select count(cid) from class where grade=3 and cstate=0')
         res2=exe_sql('select count(id) from pids')
         self.alcount.set(res0[0][0])
         self.cjcount.set(res1[0][0])
@@ -211,8 +216,8 @@ class WzFra(Frame):
             return
         where=f'({cids_str})'
         self.cids=where
-        res0=exe_sql(f'select count(cid) from class where cid in {where} and grade=2')
-        res1=exe_sql(f'select count(cid) from class where  cid in {where} and (grade=2 and cstate=0)')
+        res0=exe_sql(f'select count(cid) from class where cid in {where} and grade=3')
+        res1=exe_sql(f'select count(cid) from class where  cid in {where} and (grade=3 and cstate=0)')
         self.zdcount0.set(res0[0][0])
         self.zdcount1.set(res1[0][0])
 

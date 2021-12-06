@@ -6,7 +6,6 @@ from sql import insert, select, update
 
 dcj_keywords=[]
 pat_pid=re.compile(r'/item/(\d+?).html[?]')
-baurl=r'https://www.aliexpress.com/wholesale?trafficChannel=main&d=y&CatId=0&SearchText={0}&ltype=wholesale&SortType=default&page={1}'
 async def cj_urls(sep,w,h):
     async with sep:
         global dcj_keywords
@@ -30,12 +29,16 @@ async def cj_urls(sep,w,h):
                 break
             aurls=0
             kw=dcj_keywords.pop(0)
-            search_text=f'{kw["fcname"]} {kw["cname"]}'
+            if kw['isup']:
+                search_text=f'{kw["cfname"]} {kw["cname"]}'
+                baurl=f'https://www.aliexpress.com/wholesale?trafficChannel=main&d=y&CatId=0&SearchText={search_text}&ltype=wholesale&SortType=default&page={{}}'
+            else:
+                baurl=f'{kw["curl"]}?trafficChannel=main&CatId={kw["category"]}&ltype=wholesale&SortType=default&page={{}}'
 
             for pc in range(kw['cpcount'],kw['cpage']+1):
             #for pc in range(1,3):
                 try:
-                    liurl=baurl.format(search_text,pc)
+                    liurl=baurl.format(pc)
                     for jj in range(3):
                         try: 
                             await page.goto(liurl)
@@ -79,27 +82,27 @@ async def begin_cj_urls(w,h,k,cids):
         strat_time=time.time()
         sep=asyncio.Semaphore(k)
         tasks=[]
-        kw1s=select('grade=1','class')
         if cids==-1:
-            kw2s=select('grade=2 and cstate=0','class')
+            kw2s=select('grade=3 and cstate=0','class')
         else:
-            kw2s=select(f'cid in {cids} and grade=2 and cstate=0','class')
-        print(f'{len(kw2s)}个二级类目待采集')
+            kw2s=select(f'cid in {cids} and grade=3 and cstate=0','class')
+        print(f'{len(kw2s)}个三级类目待采集')
 
         global dcj_keywords
-        for item0 in kw2s:
-            for item1 in kw1s:
-                if item0['cfid']==item1['cid']:
-                    fc=item1['cname']
-                    break
+        dcj_keywords=kw2s
+        # for item0 in kw2s:
+        #     for item1 in kw1s:
+        #         if item0['cfid']==item1['cid']:
+        #             fc=item1['cname']
+        #             break
             
-            dcj_keywords.append({
-                'fcname':fc,
-                'cname':item0['cname'],
-                'cid':item0['cid'], 
-                'cpage':item0['cpage'],
-                'cpcount':item0['cpcount']
-            })
+        #     dcj_keywords.append({
+        #         'fcname':fc,
+        #         'cname':item0['cname'],
+        #         'cid':item0['cid'], 
+        #         'cpage':item0['cpage'],
+        #         'cpcount':item0['cpcount']
+        #     })
 
         for j in range(k):
             tasks.append(asyncio.create_task(cj_urls(sep,w,h)))

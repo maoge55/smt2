@@ -23,7 +23,7 @@ def insert(datas,table):
                     cursor.execute(sqlstr,vals)
                     success+=1
                 except Exception as e:
-                    # print(f"insert 出现错误 => {e}")
+                    #print(f"insert 出现错误 => {e}")
                     fail+=1
             conn.commit()
             return {'success':success,'fail':fail}
@@ -81,6 +81,21 @@ def exe_sql(sql):
             with conn.cursor() as cursor:
 
                     cursor.execute(sql)
+                    res=cursor.fetchall()
+                    conn.commit()  #提交
+                    return res
+    except Exception as e:
+        print(f'{sql}执行失败 => {e}')
+
+# 通用查询2
+
+def exe_sql2(sql,vals):
+    try:
+        conn = pymssql.connect('.', 'sa','123456', 'smt')
+        with conn:
+            with conn.cursor(as_dict=True) as cursor:
+
+                    cursor.execute(sql,vals)
                     res=cursor.fetchall()
                     conn.commit()  #提交
                     return res
